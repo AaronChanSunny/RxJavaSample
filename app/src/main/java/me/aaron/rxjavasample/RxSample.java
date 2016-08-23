@@ -44,4 +44,66 @@ public class RxSample {
                 });
     }
 
+    public Observable<Integer> map() {
+        return Observable
+                .just("1")
+                .map(new Func1<String, Integer>() {
+                    @Override
+                    public Integer call(String s) {
+                        return Integer.valueOf(s);
+                    }
+                });
+    }
+
+    public Observable<String> flatMap() {
+        return Observable
+                .just(291212L)
+                .flatMap(new Func1<Long, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(Long uid) {
+                        return getToken(291212L);
+                    }
+                })
+                .flatMap(new Func1<String, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(String token) {
+                        return login(token);
+                    }
+                });
+    }
+
+    private Observable<String> login(String token) {
+        return Observable.just(token + " login");
+    }
+
+    private Observable<String> getToken(long uid) {
+        return Observable.just(uid + " token");
+    }
+
+    public Observable<String> lift() {
+        return Observable
+                .just(291212L)
+                .lift(new Observable.Operator<String, Long>() {
+                    @Override
+                    public Subscriber<? super Long> call(final Subscriber<? super String> subscriber) {
+                        return new Subscriber<Long>() {
+                            @Override
+                            public void onCompleted() {
+                                subscriber.onCompleted();
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                subscriber.onError(e);
+                            }
+
+                            @Override
+                            public void onNext(Long aLong) {
+                                subscriber.onNext("" + aLong);
+                            }
+                        };
+                    }
+                });
+    }
+
 }

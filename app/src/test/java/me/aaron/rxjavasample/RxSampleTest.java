@@ -58,4 +58,34 @@ public class RxSampleTest extends BaseTest {
         expected.assertCompleted();
     }
 
+    @Test
+    public void testMap() {
+        TestSubscriber<Integer> expected = new TestSubscriber<>();
+
+        mTest.map().subscribe(expected);
+
+        expected.assertValue(1);
+        expected.onCompleted();
+    }
+
+    @Test
+    public void testFlatMap() {
+        TestSubscriber<String> expected = new TestSubscriber<>();
+
+        mTest.flatMap().subscribe(expected);
+
+        expected.assertValues("291212 token login");
+        expected.onCompleted();
+    }
+
+    @Test
+    public void testLift() {
+        TestSubscriber<String> expected = new TestSubscriber<>();
+
+        mTest.lift().subscribe(expected);
+
+        expected.assertValues("291212");
+        expected.onCompleted();
+    }
+
 }

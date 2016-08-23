@@ -122,6 +122,8 @@ static <T> Subscription subscribe(Subscriber<? super T> subscriber, Observable<T
 
 ## 操作符
 
+### 创建
+
 - `just`
 
 创建一个 `Observable`，发送 `just` 中的数据项。
@@ -167,6 +169,126 @@ public void testFrom() {
     expected.assertCompleted();
 }
 ```
+
+### 转换
+
+- `map`
+
+将一个 `Observable` 的数据项转换成另外一种格式。这边的转换可以是简单的数学函数，也可以是不同的数据结构。
+
+![](https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/map.png)
+
+```
+public Observable<Integer> map() {
+    return Observable
+            .just("1")
+            .map(new Func1<String, Integer>() {
+                @Override
+                public Integer call(String s) {
+                    return Integer.valueOf(s);
+                }
+            });
+}
+```
+
+```
+@Test
+public void testMap() {
+    TestSubscriber<Integer> expected = new TestSubscriber<>();
+    mTest.map().subscribe(expected);
+    expected.assertValue(1);
+    expected.onCompleted();
+}
+```
+
+- `flatMap`
+
+接收一个 `Observable` 作为输入，同时输出一个新的 `Observable`。这个操作符常用于链式异步请求，例如：用户登录时首先
+会请求服务端获得 `token`，取到 `token` 后再执行登录操作。
+
+![](http://reactivex.io/documentation/operators/images/flatMap.c.png)
+
+```
+public Observable<String> flatMap() {
+    return Observable
+            .just(291212L)
+            .flatMap(new Func1<Long, Observable<String>>() {
+                @Override
+                public Observable<String> call(Long uid) {
+                    return getToken(291212L);
+                }
+            })
+            .flatMap(new Func1<String, Observable<String>>() {
+                @Override
+                public Observable<String> call(String token) {
+                    return login(token);
+                }
+            });
+}
+private Observable<String> login(String token) {
+    return Observable.just(token + " login");
+}
+private Observable<String> getToken(long uid) {
+    return Observable.just(uid + " token");
+}
+```
+
+```
+@Test
+public void testFlatMap() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.flatMap().subscribe(expected);
+    expected.assertValues("291212 token login");
+    expected.onCompleted();
+}
+```
+
+- `lift`
+
+Rx所有的变换都是基于操作符 `lift`。简单地说，在 `Observable` 执行了 `lift(Operator)` 方法之后，会返回一个
+新的 `Observable`，这个新的 `Observable` 会像一个代理一样，负责接收原始的 `Observable` 发出的事件，并在处理后发送
+给 `Subscriber`。
+`lift` 的过程可以理解成一种代理机制，通过事件拦截和处理实现事件序列的变换。
+
+![](http://ww1.sinaimg.cn/mw1024/52eb2279jw1f2rxcrna27j20h40d1q4f.jpg)
+
+```
+public Observable<String> lift() {
+    return Observable
+            .just(291212L)
+            .lift(new Observable.Operator<String, Long>() {
+                @Override
+                public Subscriber<? super Long> call(final Subscriber<? super String> subscriber) {
+                    return new Subscriber<Long>() {
+                        @Override
+                        public void onCompleted() {
+                            subscriber.onCompleted();
+                        }
+                        @Override
+                        public void onError(Throwable e) {
+                            subscriber.onError(e);
+                        }
+                        @Override
+                        public void onNext(Long aLong) {
+                            subscriber.onNext("" + aLong);
+                        }
+                    };
+                }
+            });
+}
+```
+
+```
+@Test
+public void testLift() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.lift().subscribe(expected);
+    expected.assertValues("291212");
+    expected.onCompleted();
+}
+```
+
+### 过滤
 
 - `filter`
 
