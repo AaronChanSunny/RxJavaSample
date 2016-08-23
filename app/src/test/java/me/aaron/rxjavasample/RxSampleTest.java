@@ -88,4 +88,36 @@ public class RxSampleTest extends BaseTest {
         expected.onCompleted();
     }
 
+    @Test
+    public void testMerge() {
+        TestSubscriber<Long> expected = new TestSubscriber<>();
+
+        mTest.merge().subscribe(expected);
+
+        expected.awaitTerminalEvent();
+        expected.assertValues(0L, 0L, 5L, 10L, 10L, 20L, 15L, 30L, 20L, 40L);
+        expected.onCompleted();
+    }
+
+    @Test
+    public void testTake() {
+        TestSubscriber<String> expected = new TestSubscriber<>();
+
+        mTest.take().subscribe(expected);
+
+        expected.assertValues("1", "2", "3");
+        expected.onCompleted();
+    }
+
+    @Test
+    public void testToList() {
+        TestSubscriber<String> expected = new TestSubscriber<>();
+
+        mTest.toList().subscribe(expected);
+
+        expected.awaitTerminalEvent();
+        expected.assertValues("12345");
+        expected.onCompleted();
+    }
+
 }

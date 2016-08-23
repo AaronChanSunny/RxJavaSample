@@ -1,5 +1,8 @@
 package me.aaron.rxjavasample;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func1;
@@ -10,25 +13,28 @@ import rx.functions.Func1;
 public class RxSample {
 
     public Observable<String> onNext() {
-        return Observable.create(new Observable.OnSubscribe<String>() {
-            @Override
-            public void call(Subscriber<? super String> subscriber) {
-                subscriber.onNext("1");
-                subscriber.onNext("2");
-                subscriber.onCompleted();
-                subscriber.onNext("3");
-            }
-        });
+        return Observable
+                .create(new Observable.OnSubscribe<String>() {
+                    @Override
+                    public void call(Subscriber<? super String> subscriber) {
+                        subscriber.onNext("1");
+                        subscriber.onNext("2");
+                        subscriber.onCompleted();
+                        subscriber.onNext("3");
+                    }
+                });
     }
 
     public Observable<String> just() {
-        return Observable.just("Hello");
+        return Observable
+                .just("Hello");
     }
 
     public Observable<String> from() {
-        return Observable.from(new String[]{
-                "1", "2", "3"
-        });
+        return Observable
+                .from(new String[]{
+                        "1", "2", "3"
+                });
     }
 
     public Observable<String> filter() {
@@ -73,11 +79,13 @@ public class RxSample {
     }
 
     private Observable<String> login(String token) {
-        return Observable.just(token + " login");
+        return Observable
+                .just(token + " login");
     }
 
     private Observable<String> getToken(long uid) {
-        return Observable.just(uid + " token");
+        return Observable
+                .just(uid + " token");
     }
 
     public Observable<String> lift() {
@@ -102,6 +110,60 @@ public class RxSample {
                                 subscriber.onNext("" + aLong);
                             }
                         };
+                    }
+                });
+    }
+
+    public Observable<Long> merge() {
+        Observable<Long> observable1 = Observable
+                .interval(0, 1000, TimeUnit.MILLISECONDS)
+                .map(new Func1<Long, Long>() {
+                    @Override
+                    public Long call(Long aLong) {
+                        return aLong * 5;
+                    }
+                })
+                .take(5);
+
+        Observable<Long> observable2 = Observable
+                .interval(500, 1000, TimeUnit.MILLISECONDS)
+                .map(new Func1<Long, Long>() {
+                    @Override
+                    public Long call(Long aLong) {
+                        return aLong * 10;
+                    }
+                })
+                .take(5);
+
+        return Observable
+                .merge(observable1, observable2);
+    }
+
+    public Observable<String> take() {
+        return Observable
+                .just("1", "2", "3", "4", "5")
+                .take(3);
+    }
+
+    public Observable<String> toList() {
+        Observable<String> observable1 = Observable
+                .just("1", "2", "3");
+
+        Observable<String> observable2 = Observable
+                .just("4", "5");
+
+        return Observable
+                .merge(observable1, observable2)
+                .toList()
+                .flatMap(new Func1<List<String>, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(List<String> items) {
+                        String result = "";
+                        for (String item : items) {
+                            result += item + "";
+                        }
+
+                        return Observable.just(result);
                     }
                 });
     }

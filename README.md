@@ -321,6 +321,118 @@ public void testFilter() {
 }
 ```
 
+- `take`
+
+只发送 `Observable` 的前 `n` 个数据项。
+
+![](https://raw.githubusercontent.com/wiki/ReactiveX/RxJava/images/rx-operators/take.png)
+
+```
+ public Observable<String> take() {
+     return Observable
+             .just("1", "2", "3", "4", "5")
+             .take(3);
+ }
+```
+
+```
+@Test
+public void testTake() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.take().subscribe(expected);
+    expected.assertValues("1", "2", "3");
+    expected.onCompleted();
+}
+```
+
+### 组合
+
+- `merge`
+
+将多个 `Observable` 组合成一个。这里需要注意，`merge` 操作发送的数据项是交错的。
+
+![](https://raw.github.com/wiki/ReactiveX/RxJava/images/rx-operators/merge.png)
+
+```
+public Observable<Long> merge() {
+    Observable<Long> observable1 = Observable
+            .interval(0, 1000, TimeUnit.MILLISECONDS)
+            .map(new Func1<Long, Long>() {
+                @Override
+                public Long call(Long aLong) {
+                    return aLong * 5;
+                }
+            })
+            .take(5);
+    Observable<Long> observable2 = Observable
+            .interval(500, 1000, TimeUnit.MILLISECONDS)
+            .map(new Func1<Long, Long>() {
+                @Override
+                public Long call(Long aLong) {
+                    return aLong * 10;
+                }
+            })
+            .take(5);
+    return Observable
+            .merge(observable1, observable2);
+}
+```
+
+```
+@Test
+public void testMerge() {
+    TestSubscriber<Long> expected = new TestSubscriber<>();
+    mTest.merge().subscribe(expected);
+    expected.awaitTerminalEvent();
+    expected.assertValues(0L, 0L, 5L, 10L, 10L, 20L, 15L, 30L, 20L, 40L);
+    expected.onCompleted();
+}
+```
+
+- `toList`
+
+默认情况下，`Observable` 发送每一个数据项都会调用 `onNext()` 方法。如果想只调用一次 `onNext()`，可以使用 `toList` 操作符，
+并且把处理后的整个 `List` 数据集带过去。
+
+![](http://reactivex.io/documentation/operators/images/toList.png)
+
+```
+public Observable<String> toList() {
+    Observable<String> observable1 = Observable
+            .just("1", "2", "3");
+    Observable<String> observable2 = Observable
+            .just("4", "5");
+    return Observable
+            .merge(observable1, observable2)
+            .toList()
+            .flatMap(new Func1<List<String>, Observable<String>>() {
+                @Override
+                public Observable<String> call(List<String> items) {
+                    String result = "";
+                    for (String item : items) {
+                        result += item + "";
+                    }
+                    return Observable.just(result);
+                }
+            });
+}
+```
+
+```
+@Test
+public void testToList() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.toList().subscribe(expected);
+    expected.awaitTerminalEvent();
+    expected.assertValues("12345");
+    expected.onCompleted();
+}
+```
+
+使用场景举例：用户上传文件。
+处理流程，首先需要将 `N` 个文件都上传到内容服务器，然后再把上传的文件信息 `post` 到应用服务器。这里有个时序要求，即
+文件都上传完毕才能进行 `post` 操作。
+
 ## 线程切换
 
 ## 参考
