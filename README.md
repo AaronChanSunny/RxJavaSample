@@ -250,7 +250,7 @@ Rx所有的变换都是基于操作符 `lift`。简单地说，在 `Observable` 
 给 `Subscriber`。
 `lift` 的过程可以理解成一种代理机制，通过事件拦截和处理实现事件序列的变换。
 
-![](http://ww1.sinaimg.cn/mw1024/52eb2279jw1f2rxcrna27j20h40d1q4f.jpg)
+![](https://camo.githubusercontent.com/c39371130e099fe4dc3eda01a26f6180a2f8c69f/687474703a2f2f7777312e73696e61696d672e636e2f6d77313032342f35326562323237396a77316632727863726e6132376a323068343064317134662e6a7067)
 
 ```
 public Observable<String> lift() {
