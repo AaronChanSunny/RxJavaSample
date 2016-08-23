@@ -30,7 +30,7 @@ Java并不支持从子线程中抛出异常，我们只能在子线程中捕获�
 
 ## 开始
 
-[](http://ww3.sinaimg.cn/mw1024/52eb2279jw1f2rx46dspqj20gn04qaad.jpg)
+![](http://ww3.sinaimg.cn/mw1024/52eb2279jw1f2rx46dspqj20gn04qaad.jpg)
 
 - 创建观察者
 
@@ -122,8 +122,86 @@ static <T> Subscription subscribe(Subscriber<? super T> subscriber, Observable<T
 
 ## 操作符
 
+- `just`
+
+创建一个 `Observable`，发送 `just` 中的数据项。
+
+![](http://reactivex.io/documentation/operators/images/just.c.png)
+
+```
+public Observable<String> just() {
+    return Observable.just("Hello");
+}
+```
+
+```
+@Test
+public void testJust() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.just().subscribe(expected);
+    expected.assertValues("Hello");
+    expected.assertCompleted();
+}
+```
+
+- `from`
+
+将非 `Observable` 数据类型转换为 `Observable`。
+
+![](http://reactivex.io/documentation/operators/images/from.c.png)
+
+```
+public Observable<String> from() {
+    return Observable.from(new String[]{
+            "1", "2", "3"
+    });
+}
+```
+
+```
+@Test
+public void testFrom() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.from().subscribe(expected);
+    expected.assertValues("1", "2", "3");
+    expected.assertCompleted();
+}
+```
+
+- `filter`
+
+仅发送符合过滤条件的数据项。
+
+![](https://raw.githubusercontent.com/wiki/ReactiveX/RxJava/images/rx-operators/filter.png)
+
+```
+public Observable<String> filter() {
+    return Observable
+            .from(new String[]{
+                    "1", "2", "3", "2"
+            })
+            .filter(new Func1<String, Boolean>() {
+                @Override
+                public Boolean call(String s) {
+                    return "2".equalsIgnoreCase(s);
+                }
+            });
+}
+```
+
+```
+@Test
+public void testFilter() {
+    TestSubscriber<String> expected = new TestSubscriber<>();
+    mTest.filter().subscribe(expected);
+    expected.assertValues("2", "2");
+    expected.assertCompleted();
+}
+```
+
 ## 线程切换
 
 ## 参考
 
-- []()
+- [Reactivex Documentation](http://reactivex.io/documentation/operators.html)
+- [给 Android 开发者的 RxJava 详解](http://gank.io/post/560e15be2dca930e00da1083#toc_17)
